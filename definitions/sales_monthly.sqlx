@@ -1,0 +1,9 @@
+config {
+  type: "table"
+}
+
+SELECT
+  DATE_TRUNC(sale_date, MONTH) AS month,
+  SUM(total_amount) AS monthly_amount
+FROM ${ref("sales_daily")}
+GROUP BY month
