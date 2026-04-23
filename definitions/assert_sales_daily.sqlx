@@ -5,4 +5,4 @@ config {
 SELECT *
 FROM ${ref("sales_daily")}
 WHERE total_amount IS NULL
-   OR total_amount < 10
+   OR total_amount < 0
