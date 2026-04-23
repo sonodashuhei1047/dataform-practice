@@ -1,0 +1,8 @@
+config {
+  type: "assertion"
+}
+
+SELECT *
+FROM ${ref("sales_daily")}
+WHERE total_amount IS NULL
+   OR total_amount < 0
