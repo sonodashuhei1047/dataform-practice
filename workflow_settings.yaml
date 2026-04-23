@@ -1,4 +1,4 @@
 defaultProject: dataform-practice-494015
-defaultDataset: dataform
+defaultDataset: practice
 defaultAssertionDataset: dataform_assertions
 dataformCoreVersion: 3.0.42
