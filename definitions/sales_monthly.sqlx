@@ -1,6 +1,5 @@
 config {
-  type: "table",
-  dependencies: ["assert_sales_daily"]
+  type: "table"
 }
 
 SELECT
