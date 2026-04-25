@@ -1,0 +1,6 @@
+config {
+  type: "declaration",
+  database: "dataform-practice-494015",
+  schema: "access_logs_sample",
+  name: "access_logs_sample"
+}
