@@ -1,26 +1,21 @@
 config {
-    type: "table", // 増分テーブル: "incremental" ビュー: "view" で設定
+    type: "incremental",
     
-    tags: ["10"], // 任意の文字列を tag として設定。ワークフロー実行設定は `how_to_create_table.md` を参照してください
+    tags: ["10"], 
     
-
-    schema: "some_dataset", // 出力するデータセットを設定
+    schema: "access_logs_sample",
     
-    description: "some description",  // テーブル説明
+    description: "「日ごとに」「何回訪問した人が」「何ユーザー(ブラウザ)」存在するかを確かめられるテーブル",  // テーブル説明
     
     columns: {
-        col_a: "some column description for col_a",
-        col_b: "some column description for col_b",
+      access_day: "アクセス日",
+      access_times: "訪問回数",
+      member_id_count: "ユーザー数(ユニークブラウザID数)"
     },
 
-    // assertion の設定方法は以下を参照
-    // ref: https://docs.cloud.google.com/dataform/docs/overview?hl=ja#tests
     assertions: {
-        uniqueKeys: [
-            ["col_a"]
-        ]
+        nonNull: ["access_day","access_times","member_id_count"]
     }
-
 }
 
 -- ブラウザ単位で1つ前のアクセス時刻を取得／不要データの除外
@@ -32,13 +27,14 @@ SELECT
   LAG ( access_timestamp, 1) OVER (PARTITION BY  member_id ORDER BY access_timestamp) AS lag_1_access_timestamp --1つ前のアクセス時刻（会員単位）
 FROM ${ref("access_logs_sample")}
 WHERE 
-  ${when(
-    incremental(),
-    `timestamp_trunc(access_timestamp,DAY) = DATE_SUB(CURRENT_DATE("Asia/Tokyo"), INTERVAL 1 DAY)`,
-    `timestamp_trunc(access_timestamp,DAY) < CURRENT_DATE("Asia/Tokyo")`
-  )}
-  AND internal_access = False --社内アクセスの除外
+  internal_access = False --社内アクセスの除外
   AND member_id IS NOT NULL --ユニークブラウザ数を取得するため、member_id＝Nullは不要。かつ、Nullのレコード数が全体の3割超を占めるため、処理軽量化のため除外
+  AND ${when(
+    incremental(),
+    `DATE(access_timestamp) = DATE_SUB(CURRENT_DATE("Asia/Tokyo"), INTERVAL 1 DAY)`,
+    `DATE(access_timestamp) < CURRENT_DATE("Asia/Tokyo")`
+  )}
+  
 )
 
 -- アクセス日時の抽出／各ブラウザIDの一つ前のアクセスからの経過時間を取得／
